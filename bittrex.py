@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 # author:       me@itzo.org
-# version:      2.1
-# description:  Get current data from bittrex for market exchange rates and amounts in order book
+# version:      2.2
+# description:  Get current data from Bittrex for market exchange rates and amounts in order book
+#               Store the data in a sqlite database for future use
 
 import urllib
 import json
@@ -63,7 +64,7 @@ def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_m
 
 # get the market data
 def get_data(market):
-    # load JSON data from Bittrex API 
+    # load JSON data from Bittrex API
     url = 'https://bittrex.com/api/v1.1/public/getorderbook?market='+market+'&type=both&depth=50'
     json_obj = urllib.urlopen(url)
     data = json.load(json_obj)
@@ -88,15 +89,16 @@ def get_data(market):
             sellq += item['Quantity']
     db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max)
 
-    print "----------------------------------------"
-    print "buy orders:\t\t"+str(total_buy_orders)
-    print "buy_index:\t\t"+str(buy_index)
-    print "MIN buy allowed:\t"+str(buy_min)
-    print "----------------------------------------"
-    print "sell orders:\t\t"+str(total_sell_orders)
-    print "sell_index:\t\t"+str(sell_index)
-    print "MAX sell allowed:\t"+str(sell_max)
-    print "----------------------------------------"
+    #print "----------------------------------------"
+    #print "buy orders:\t\t"+str(total_buy_orders)
+    #print "buy_index:\t\t"+str(buy_index)
+    #print "MIN buy allowed:\t"+str(buy_min)
+    #print "----------------------------------------"
+    #print "sell orders:\t\t"+str(total_sell_orders)
+    #print "sell_index:\t\t"+str(sell_index)
+    #print "MAX sell allowed:\t"+str(sell_max)
+    #print "----------------------------------------"
+
 
 # print market history
 def print_history(market):
