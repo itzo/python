@@ -1,15 +1,52 @@
 #!/usr/bin/env python
 
-# version:     2.0
-# description: get current data from bittrex for market exchange rates and amounts in order book
-# example:     ./bittrex.py BTC-ETH
+# author:       me@itzo.org
+# version:      2.1
+# description:  Get current data from bittrex for market exchange rates and amounts in order book
+# usage:        ./bittrex.py BTC-ETH
 
 import urllib
 import json
 import datetime
 import sys
+import getopt
 
-market = sys.argv[1]
+
+def usage():
+    print "usage: ./bittrex.py [-iuh] -m market"
+    print "     -i [--init]    initializes a new sqlite database 'market.db'"
+    print "     -u [--update]  updates the database with the latest data from bittrex"
+    print "     -m [--market]  specifies the market to use (e.g. BTC-SJCX)"
+    print "     -h [--help]    prints this menu"
+
+def create_db():
+    print "db created"
+
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'ium:h', ['init', 'update', 'market=', 'help'])
+except getopt.GetoptError:
+    usage()
+    sys.exit(2)
+
+for opt, arg in opts:
+    if opt in ('-h', '--help'):
+        usage()
+        sys.exit(2)
+    elif opt in ('-i', '--init'):
+        create_db()
+    elif opt in ('-u', '--update'):
+        print "update db"
+    elif opt in ('-m', '--market'):
+        market = arg
+    else:
+        usage()
+        sys.exit(2)
+
+
+
+
+#market = sys.argv[1]
 date = datetime.datetime.now()
 url = 'https://bittrex.com/api/v1.1/public/getorderbook?market='+market+'&type=both&depth=50'
 
@@ -52,16 +89,18 @@ for item in data['result']['sell']:
         if item['Rate'] < sell_max:
             sellq += item['Quantity']
 
-# print results
-print "date      buyq  sellq bid    ask    buy# sell# min_buy max_sell"
-print "%s/%s/%s" % (date.month, date.day, date.year),\
-        str(int(buyq)),\
-        str(int(sellq)),\
-        str(bid),\
-        str(ask),\
-        str(total_buy_orders),\
-        str(total_sell_orders),\
-        str(buy_min),\
-        str(sell_max)
 
 
+
+# update the db with the latest info
+def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max):
+    import sqlite3 as lite
+
+    timestamp = int(datetime.datetime.now().strftime("%s"))
+    con = lite.connect('market.db')
+    cur = con.cursor()
+    cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
+        (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
+    con.commit()
+
+db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max)
