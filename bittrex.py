@@ -3,7 +3,6 @@
 # author:       me@itzo.org
 # version:      2.1
 # description:  Get current data from bittrex for market exchange rates and amounts in order book
-# usage:        ./bittrex.py BTC-ETH
 
 import urllib
 import json
@@ -12,12 +11,17 @@ import sys
 import getopt
 import sqlite3 as db
 
+
+# print usage
 def usage():
     print "usage: ./bittrex.py [-iph] -m market"
+    print "   eg: ./bittrex.py -m BTC-ETH"
+    print
     print "     -i [--init]     initializes a new sqlite database 'market.db'"
     print "     -p [--print]    prints out history for given market"
-    print "     -m [--market]   specifies the market to use (e.g. BTC-SJCX)"
+    print "     -m [--market]   specifies the market to use"
     print "     -h [--help]     prints this menu"
+
 
 # initialize the market.db if requested
 def create_db():
@@ -46,7 +50,68 @@ def create_db():
         if con:
             con.close()
 
-# get cmd line options
+
+# update the db with the latest info
+def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max):
+    timestamp = int(datetime.datetime.now().strftime("%s"))
+    con = db.connect('market.db')
+    cur = con.cursor()
+    cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
+        (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
+    con.commit()
+
+
+# get the market data
+def get_data(market):
+    # load JSON data from Bittrex API 
+    url = 'https://bittrex.com/api/v1.1/public/getorderbook?market='+market+'&type=both&depth=50'
+    json_obj = urllib.urlopen(url)
+    data = json.load(json_obj)
+    # get the sum of all orders that we care about
+    buyq = 0
+    sellq = 0
+    # only top 'percent' % of each orderbook considered relevant data
+    percent = 25
+    bid = data['result']['buy'][0]['Rate']
+    total_buy_orders = len(data['result']['buy'])
+    buy_index = percent * total_buy_orders/100
+    buy_min = data['result']['buy'][buy_index]['Rate']
+    ask = data['result']['sell'][0]['Rate']
+    total_sell_orders = len(data['result']['sell'])
+    sell_index = percent * total_sell_orders/100
+    sell_max = data['result']['sell'][sell_index]['Rate']
+    for item in data['result']['buy']:
+        if item['Rate'] > buy_min:
+            buyq += item['Quantity']
+    for item in data['result']['sell']:
+        if item['Rate'] < sell_max:
+            sellq += item['Quantity']
+    db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max)
+
+    print "----------------------------------------"
+    print "buy orders:\t\t"+str(total_buy_orders)
+    print "buy_index:\t\t"+str(buy_index)
+    print "MIN buy allowed:\t"+str(buy_min)
+    print "----------------------------------------"
+    print "sell orders:\t\t"+str(total_sell_orders)
+    print "sell_index:\t\t"+str(sell_index)
+    print "MAX sell allowed:\t"+str(sell_max)
+    print "----------------------------------------"
+
+# print market history
+def print_history(market):
+    con = db.connect('market.db')
+    with con:
+        cur = con.cursor()
+        cur.execute('SELECT * from history')
+        con.commit()
+        rows = cur.fetchall()
+        for row in rows:
+            print "%-8s\t%s\t%+8s\t%+8s\t%0.8f\t%0.8f" % (row[0], row[1], row[2], row[3], row[4], row[5])
+            #market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max
+
+
+# get cmd line options a.k.a. main... ;\
 required_m = False
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'ipm:h', ['init', 'print', 'market=', 'help'])
@@ -60,69 +125,15 @@ for opt, arg in opts:
         sys.exit(2)
     elif opt in ('-m', '--market'):
         market = arg
+        get_data(market)
         required_m = True
     elif opt in ('-i', '--init'):
         create_db()
     elif opt in ('-p', '--print'):
-        print "print history of market"
+        print_history(market)
     else:
         usage()
         sys.exit(2)
 if required_m == False:
     usage()
     sys.exit(2)
-
-
-#market = sys.argv[1]
-date = datetime.datetime.now()
-url = 'https://bittrex.com/api/v1.1/public/getorderbook?market='+market+'&type=both&depth=50'
-
-# load json data
-json_obj = urllib.urlopen(url)
-data = json.load(json_obj)
-
-# initiate buy and sell quantity
-buyq = 0
-sellq = 0
-# only top 'percent' % of each orderbook considered relevant data
-percent = 25
-# or use buy_index and sell_index instead
-#buy_index = 40
-#sell_index = 50
-
-print "----------------------------------------"
-bid = data['result']['buy'][0]['Rate']
-total_buy_orders = len(data['result']['buy'])
-print "buy orders:\t\t"+str(total_buy_orders)
-buy_index = percent*total_buy_orders/100
-print "buy_index:\t\t"+str(buy_index)
-buy_min = data['result']['buy'][buy_index]['Rate']
-print "MIN buy allowed:\t"+str(buy_min)
-print "----------------------------------------"
-ask = data['result']['sell'][0]['Rate']
-total_sell_orders = len(data['result']['sell'])
-print "sell orders:\t\t"+str(total_sell_orders)
-sell_index = percent*total_sell_orders/100
-print "sell_index:\t\t"+str(sell_index)
-sell_max = data['result']['sell'][sell_index]['Rate']
-print "MAX sell allowed:\t"+str(sell_max)
-print "----------------------------------------"
-
-# get the sum of all orders that we care about
-for item in data['result']['buy']:
-        if item['Rate'] > buy_min:
-            buyq += item['Quantity']
-for item in data['result']['sell']:
-        if item['Rate'] < sell_max:
-            sellq += item['Quantity']
-
-# update the db with the latest info
-def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max):
-    timestamp = int(datetime.datetime.now().strftime("%s"))
-    con = db.connect('market.db')
-    cur = con.cursor()
-    cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
-        (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
-    con.commit()
-
-db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max)
