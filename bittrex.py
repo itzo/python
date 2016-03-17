@@ -10,21 +10,46 @@ import json
 import datetime
 import sys
 import getopt
-
+import sqlite3 as db
 
 def usage():
-    print "usage: ./bittrex.py [-iuh] -m market"
-    print "     -i [--init]    initializes a new sqlite database 'market.db'"
-    print "     -u [--update]  updates the database with the latest data from bittrex"
-    print "     -m [--market]  specifies the market to use (e.g. BTC-SJCX)"
-    print "     -h [--help]    prints this menu"
+    print "usage: ./bittrex.py [-iph] -m market"
+    print "     -i [--init]     initializes a new sqlite database 'market.db'"
+    print "     -p [--print]    prints out history for given market"
+    print "     -m [--market]   specifies the market to use (e.g. BTC-SJCX)"
+    print "     -h [--help]     prints this menu"
 
+# initialize the market.db if requested
 def create_db():
-    print "db created"
+    try:
+        con = db.connect('market.db')
+        cur = con.cursor()
+        cur.execute('DROP TABLE IF EXISTS history')
+        cur.executescript("""
+            CREATE TABLE history(  market TEXT,
+                date TIMESTAMP,
+                buyq INT,
+                sellq INT,
+                bid REAL,
+                ask REAL,
+                buy_orders INT,
+                sell_orders INT,
+                buy_min REAL,
+                sell_max REAL);""")
+        con.commit()
+    except db.Error, e:
+        if con:
+            con.rollback()
+        print "Error %s:" % e.args[0]
+        sys.exit(1)
+    finally:
+        if con:
+            con.close()
 
-
+# get cmd line options
+required_m = False
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'ium:h', ['init', 'update', 'market=', 'help'])
+    opts, args = getopt.getopt(sys.argv[1:], 'ipm:h', ['init', 'print', 'market=', 'help'])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -33,17 +58,19 @@ for opt, arg in opts:
     if opt in ('-h', '--help'):
         usage()
         sys.exit(2)
-    elif opt in ('-i', '--init'):
-        create_db()
-    elif opt in ('-u', '--update'):
-        print "update db"
     elif opt in ('-m', '--market'):
         market = arg
+        required_m = True
+    elif opt in ('-i', '--init'):
+        create_db()
+    elif opt in ('-p', '--print'):
+        print "print history of market"
     else:
         usage()
         sys.exit(2)
-
-
+if required_m == False:
+    usage()
+    sys.exit(2)
 
 
 #market = sys.argv[1]
@@ -89,15 +116,10 @@ for item in data['result']['sell']:
         if item['Rate'] < sell_max:
             sellq += item['Quantity']
 
-
-
-
 # update the db with the latest info
 def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max):
-    import sqlite3 as lite
-
     timestamp = int(datetime.datetime.now().strftime("%s"))
-    con = lite.connect('market.db')
+    con = db.connect('market.db')
     cur = con.cursor()
     cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
         (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
