@@ -106,9 +106,13 @@ def print_history(market):
         cur.execute('SELECT * from history')
         con.commit()
         rows = cur.fetchall()
+        print "%-8s %-10s %+8s %+8s %-10s  %-10s %+5s %+5s  %+10s %+10s" % \
+        ('Market', 'Time', 'Buyq', 'Sellq', 'Bid', 'Ask', 'Buy#', 'Sell#', 'Buy min', 'Sell max')
         for row in rows:
-            print "%-8s\t%s\t%+8s\t%+8s\t%0.8f\t%0.8f" % (row[0], row[1], row[2], row[3], row[4], row[5])
-            #market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max
+            if row[0] == market:
+                print "%-8s %s %+8s %+8s %0.8f  %0.8f %+5s %+5s  %0.8f %0.8f" % \
+                (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
+                #market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max
 
 
 # get cmd line options a.k.a. main... ;\
