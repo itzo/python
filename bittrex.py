@@ -11,6 +11,7 @@ import datetime
 import sys
 import getopt
 import sqlite3 as db
+import os.path
 
 
 # print usage
@@ -54,13 +55,17 @@ def create_db():
 
 # update the db with the latest info
 def db_insert(market,buyq,sellq,bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max):
-    timestamp = int(datetime.datetime.now().strftime("%s"))
-    con = db.connect('market.db')
-    cur = con.cursor()
-    cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
-        (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
-    con.commit()
-
+    if os.path.isfile('market.db'):
+        timestamp = int(datetime.datetime.now().strftime("%s"))
+        con = db.connect('market.db')
+        cur = con.cursor()
+        cur.execute('INSERT INTO history VALUES(?,?,?,?,?,?,?,?,?,?)', \
+            (market,timestamp,int(buyq),int(sellq),bid,ask,total_buy_orders,total_sell_orders,buy_min,sell_max));
+        con.commit()
+    else:
+        print "Can't find the database. Please specify the -i flag to create it.\n"
+        usage()
+        sys.exit(2)
 
 # get the market data
 def get_data(market):

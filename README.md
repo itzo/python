@@ -4,6 +4,8 @@ Random python scripts
 ## bittrex.py
 Get current Bittrex market data and store in a local db
 
+Note: During the first run you must specify the -i (init) flag to create the database
+
 example run:
 ```
 $ ./bittrex.py -m BTC-FTC -p
