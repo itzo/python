@@ -13,6 +13,8 @@ import smtplib
 import argparse
 from getpass import getpass
 
+
+# get arguments and usage
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('recipients',
@@ -32,11 +34,10 @@ def get_parser():
         action='store_true',
         help='Enable debugging for the SMTP server interaction.'
     )
-
     return parser
 
 
-# parse arguments
+# parse and validate arguments
 def parse_args():
     parser = get_parser()
     args = parser.parse_args()
