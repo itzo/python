@@ -12,7 +12,7 @@ import json
 import smtplib
 import argparse
 from getpass import getpass
-
+import datetime
 
 # get arguments and usage
 def get_parser():
@@ -96,10 +96,10 @@ def send_email(args,msg):
         server.ehlo()
         server.login(args.user, args.pwfile)
         server.sendmail(args.user, args.recipients, msg)
-        print "Message sent to '%s'." % args.recipients
+        print str(datetime.datetime.now())+" - message sent to '%s'." % args.recipients
         server.close()
     except smtplib.SMTPAuthenticationError as e:
-        print "Unable to send message: %s" % e
+        print str(datetime.datetime.now())+" - unable to send message: %s" % e
 
 
 # main function
