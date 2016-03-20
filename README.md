@@ -1,9 +1,11 @@
 # python
 Random python scripts
 
+
 ---
 
-# driveshare-check.py
+
+## driveshare-check.py
 Check the status of a payout address against the Driveshare API data. Send an email with the current status of the instance(s). Less Secure Apps must be enabled in the user's Google account to be able to send email from this script.
 See: [Google Less Secure Apps](https://settings/security/lesssecureapps "Google Less Secure Apps")
 
@@ -75,7 +77,9 @@ cat /tmp/driveshare_check.log
 2016-03-20 01:39:02.626560 - message sent to '['your@email.address']'.
 ```
 
+
 ---
+
 
 ## bittrex.py
 Get current Bittrex market data and store in a local db
@@ -104,5 +108,6 @@ usage: ./bittrex.py [-iph] -m market
      -m [--market]   specifies the market to use
      -h [--help]     prints this menu
 ```
+
 
 ---
