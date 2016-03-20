@@ -1,7 +1,8 @@
 # python
 Random python scripts
 
-## bittrex.py
+
+# bittrex.py
 Get current Bittrex market data and store in a local db
 
 Note: During the first run you must specify the -i (init) flag to create the database
@@ -29,7 +30,8 @@ usage: ./bittrex.py [-iph] -m market
      -h [--help]     prints this menu
 ```
 
-## driveshare-check.py
+
+# driveshare-check.py
 Check the status of a payout address against Storj's driveshare API
 
 Some examples:
@@ -94,4 +96,8 @@ MYPWFILE="$HOME/git/driveshare_check/.x"
 printf "#Script to check if Storj instances are up and send a report\nMAILTO=''\n0 0,12 * * * $USER $HOME/git/driveshare_check/driveshare-check.py $RECIPIENTS -a $PAYOUT_ADDR -u $GMAIL_USER -p $MYPWFILE >> /tmp/driveshare_check.log 2>&1\n" > ~/git/driveshare_check/cron.tmp
 sudo cp ~/git/driveshare_check/cron.tmp /etc/cron.d/driveshare_check
 ```
-If you're not receiving the email check the log file for errors at /tmp/driveshare_check.log
+If you're not receiving the email check the log file for errors. You should be seeing something like this:
+```
+cat /tmp/driveshare_check.log
+2016-03-20 01:39:02.626560 - message sent to '['your@email.address']'.
+```
