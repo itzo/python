@@ -7,7 +7,7 @@ Random python scripts
 
 ## driveshare-check.py
 Check the status of a payout address against the Driveshare API data. Send an email with the current status of the instance(s). Less Secure Apps must be enabled in the user's Google account to be able to send email from this script.
-See: [Google Less Secure Apps](https://settings/security/lesssecureapps "Google Less Secure Apps")
+See: [Google Less Secure Apps](https://www.google.com/settings/security/lesssecureapps "Google Less Secure Apps")
 
 Some examples:
 
