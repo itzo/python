@@ -91,7 +91,7 @@ PAYOUT_ADDR="your SJCX payout address"
 GMAIL_USER="your gmail username"
 MYPWFILE="$HOME/git/driveshare_check/.x"
 
-printf "#Script to check if Storj instances are up and send a report\nMAILTO=''\n0 0,12 * * * $USER $HOME/git/driveshare_check/driveshare-check.py $RECIPIENTS -a $PAYOUT_ADDR -u $GMAIL_USER -p $HOME/git/driveshare_check/$MYPWFILE >> /tmp/driveshare_check.log 2>&1\n" > ~/git/driveshare_check/cron.tmp
-sudo cp ~/cron.tmp /etc/cron.d/driveshare_check
+printf "#Script to check if Storj instances are up and send a report\nMAILTO=''\n0 0,12 * * * $USER $HOME/git/driveshare_check/driveshare-check.py $RECIPIENTS -a $PAYOUT_ADDR -u $GMAIL_USER -p $MYPWFILE >> /tmp/driveshare_check.log 2>&1\n" > ~/git/driveshare_check/cron.tmp
+sudo cp ~/git/driveshare_check/cron.tmp /etc/cron.d/driveshare_check
 ```
 If you're not receiving the email check the log file for errors at /tmp/driveshare_check.log
