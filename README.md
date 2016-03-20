@@ -32,7 +32,7 @@ usage: ./bittrex.py [-iph] -m market
 ## driveshare-check.py
 Check the status of a payout address against Storj's driveshare API
 
-examples:
+Some examples:
 
 Using a password file with no prompts. This is useful for automated processes such as adding a cronjob to run this check and email you occasionally. TODO: alert if instance goes down, otherwise email status report only once a week.
 ```
@@ -69,3 +69,29 @@ optional arguments:
                         The user's SJCX payout address to check the status of.
   -d, --debug           Enable debugging for the SMTP server interaction.
 ```
+
+### Automated checks
+
+Doing an automated check can be done via a cron job that runs the script with your payout address, user, and email. Here's one way to do it:
+
+1) Clone the repository
+```
+mkdir -p ~/git && cd ~/git
+git clone https://github.com/itzo/python.git driveshare_check
+```
+2) Add your gmail user's password here and make sure only you can read the file
+```
+vim $HOME/git/driveshare_check/.x
+chmod 600 $HOME/git/driveshare_check/.x
+```
+3) Finally create the cron entry. The below example will run twice a day - at midnight and noon.
+```
+RECIPIENTS="your@email.address"
+PAYOUT_ADDR="your SJCX payout address"
+GMAIL_USER="your gmail username"
+MYPWFILE="$HOME/git/driveshare_check/.x"
+
+printf "#Script to check if Storj instances are up and send a report\nMAILTO=''\n0 0,12 * * * $USER $HOME/git/driveshare_check/driveshare-check.py $RECIPIENTS -a $PAYOUT_ADDR -u $GMAIL_USER -p $HOME/git/driveshare_check/$MYPWFILE >> /tmp/driveshare_check.log 2>&1\n" > ~/git/driveshare_check/cron.tmp
+sudo cp ~/cron.tmp /etc/cron.d/driveshare_check
+```
+If you're not receiving the email check the log file for errors at /tmp/driveshare_check.log
