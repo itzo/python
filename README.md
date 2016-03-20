@@ -1,53 +1,26 @@
 # python
 Random python scripts
 
-
-# bittrex.py
-Get current Bittrex market data and store in a local db
-
-Note: During the first run you must specify the -i (init) flag to create the database
-
-example run:
-```
-$ ./bittrex.py -m BTC-FTC -p
-
-Market   Time           Buyq    Sellq Bid         Ask         Buy# Sell#     Buy min   Sell max
-BTC-FTC  1458192319   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
-BTC-FTC  1458192320   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
-BTC-FTC  1458192423   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
-BTC-FTC  1458192864   101245   298172 0.00001924  0.00001987   155   522  0.00001666 0.00003850
-```
-options:
-```
-$ ./bittrex.py -h
-
-usage: ./bittrex.py [-iph] -m market
-   eg: ./bittrex.py -m BTC-ETH
-
-     -i [--init]     initializes a new sqlite database 'market.db'
-     -p [--print]    prints out history for given market
-     -m [--market]   specifies the market to use
-     -h [--help]     prints this menu
-```
-
+---
 
 # driveshare-check.py
-Check the status of a payout address against Storj's driveshare API
+Check the status of a payout address against the Driveshare API data. Send an email with the current status of the instance(s). Less Secure Apps must be enabled in the user's Google account to be able to send email from this script.
+See: [Google Less Secure Apps](https://settings/security/lesssecureapps "Google Less Secure Apps")
 
 Some examples:
 
 Using a password file with no prompts. This is useful for automated processes such as adding a cronjob to run this check and email you occasionally. TODO: alert if instance goes down, otherwise email status report only once a week.
 ```
-$ ./driveshare-check.py me@itzo.org -a <payout address> -u <gmail user> -p <secret file>
-Message sent to '['me@itzo.org']'.
+$ ./driveshare-check.py your@email.address -a <payout address> -u <gmail user> -p <secret file>
+Message sent to '['your@email.address']'.
 ```
 Interactive run with no arguments passed on the command line
 ```
-$ ./driveshare-check.py me@itzo.org
+$ ./driveshare-check.py your@email.address
 Gmail username: <gmail user>
 Password: <gmail password>
 Payout address: <payout address>
-Message sent to '['me@itzo.org']'.
+Message sent to '['your@email.address']'.
 ```
 Detailed help menu
 ```
@@ -101,3 +74,35 @@ If you're not receiving the email check the log file for errors. You should be s
 cat /tmp/driveshare_check.log
 2016-03-20 01:39:02.626560 - message sent to '['your@email.address']'.
 ```
+
+---
+
+## bittrex.py
+Get current Bittrex market data and store in a local db
+
+Note: During the first run you must specify the -i (init) flag to create the database
+
+example run:
+```
+$ ./bittrex.py -m BTC-FTC -p
+
+Market   Time           Buyq    Sellq Bid         Ask         Buy# Sell#     Buy min   Sell max
+BTC-FTC  1458192319   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
+BTC-FTC  1458192320   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
+BTC-FTC  1458192423   117141   336303 0.00001914  0.00001996   158   523  0.00001666 0.00003810
+BTC-FTC  1458192864   101245   298172 0.00001924  0.00001987   155   522  0.00001666 0.00003850
+```
+options:
+```
+$ ./bittrex.py -h
+
+usage: ./bittrex.py [-iph] -m market
+   eg: ./bittrex.py -m BTC-ETH
+
+     -i [--init]     initializes a new sqlite database 'market.db'
+     -p [--print]    prints out history for given market
+     -m [--market]   specifies the market to use
+     -h [--help]     prints this menu
+```
+
+---
