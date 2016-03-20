@@ -63,12 +63,9 @@ def create_message(args,body):
     return msg
 
 
-# main function
-def main():
-    args = parse_args()
-    payout_addr = args.address
+# create the body of the email to be sent
+def create_body(args):
     url = 'http://status.driveshare.org/api/online/json'
-    password = args.pwfile
 
     # capture the data into an object
     json_obj = urllib.urlopen(url)
@@ -78,24 +75,35 @@ def main():
     count = 0
     body = ""
     for item in data['farmers']:
-        if item['payout_addr'] == payout_addr:
+        if item['payout_addr'] == args.address:
             body += str(item['btc_addr'])+" "+str(item['height'])+" "+str(item['last_seen'])+"sec\n"
             count += 1
     body += "\n"+str(count)+" instances found."
-    msg = create_message(args,body)
+    return body
 
+
+# send the email
+def send_email(args,msg):
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.set_debuglevel(args.debug)
         server.ehlo()
         server.starttls()
         server.ehlo()
-        server.login(args.user, password)
+        server.login(args.user, args.pwfile)
         server.sendmail(args.user, args.recipients, msg)
         print "Message sent to '%s'." % args.recipients
         server.close()
     except smtplib.SMTPAuthenticationError as e:
         print "Unable to send message: %s" % e
+
+
+# main function
+def main():
+    args = parse_args()
+    body = create_body(args)
+    msg = create_message(args,body)
+    send_email(args,msg)
 
 if __name__ == "__main__":
     main()
