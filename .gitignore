@@ -2,11 +2,9 @@
 ###################
 *.com
 *.class
-*.dll
-*.exe
 *.o
 *.so
-*.tmp
+*.pyc
 
 # Packages #
 ############
@@ -26,6 +24,7 @@
 *.log
 *.sql
 *.sqlite
+*.db
 
 # OS generated files #
 ######################
@@ -37,8 +36,8 @@
 ehthumbs.db
 Thumbs.db
 
-# Private stuff
-######################
+# Other #
+#########
 .private
 .x
-market.db
+*.tmp
