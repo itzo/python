@@ -74,12 +74,16 @@ def create_body(args):
 
     # grab our payout address
     count = 0
+    total_height = 0
     body = "Payout address: "+args.address+"\n\n"
     for item in data['farmers']:
         if item['payout_addr'] == args.address:
             body += str(item['btc_addr'])+" "+str(item['height'])+" "+str(item['last_seen'])+"sec\n"
             count += 1
-    body += str(count)+" instances found."
+            total_height += item['height']
+    gb = total_height*128/1024
+    body += str(count)+" instances found.\n"
+    body += "Total space shared: "+str(gb)+" GB."
     if count == 0:
         body += "\n\nCould not find your payout address among the active testers!\n"
         body += "Please check that you have the correct payout address and that your instances are up and running."
