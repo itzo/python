@@ -2,12 +2,11 @@ import os
 import time
 from slackclient import SlackClient
 import sqlite3 as db
-import pprint
 import sys
 
 # BOT_ID = os.environ.get('BOT_ID')
 
-# initialize the reactions.db once
+# crate db table
 def create_db():
     try:
         con = db.connect('reactions.db')
@@ -47,7 +46,7 @@ def parse_event(event):
     #print str(event) + '\n'
     if event and len(event) > 0:
         data = event[0]
-        if 'reaction' in data:
+        if all(x in data for x in ['user', 'item_user', 'reaction']):
             reaction = data['reaction']
             from_user = data['user']
             to_user = data['item_user']
@@ -64,16 +63,16 @@ def parse_event(event):
 
 # get the list of users and their real names
 def get_users():
-    #pp = pprint.PrettyPrinter(indent=2)
-    #pp.pprint(sc.api_call('users.list', channel='#general'))
     data = sc.api_call('users.list', channel='#general')
     for user in data['members']:
         print 'id: %s, name: %s' % (user['id'], user['name'])
 
 # main
 if __name__ == '__main__':
+    # initialize db if it doesn't exist
     if os.path.exists('./reactions.db') == False:
         create_db()
+    # connect to slack
     token = os.environ.get('SLACK_BOT_TOKEN')
     sc = SlackClient(token)
     if sc.rtm_connect():
