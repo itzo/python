@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+
 import os
-import time
 from slackclient import SlackClient
 import sqlite3 as db
 import sys
@@ -8,9 +9,8 @@ import re
 channel = '#general'
 users = {}
 
-# BOT_ID = os.environ.get('BOT_ID')
 
-# crate db table
+# crate db table if none exists
 def create_db():
     try:
         con = db.connect('reactions.db')
@@ -33,7 +33,8 @@ def create_db():
         if con:
             con.close()
 
-# insert reaction into db
+
+# insert reaction into db table
 def db_insert(from_user, to_user, reaction, counter):
     if os.path.isfile('reactions.db'):
         con = db.connect('reactions.db')
@@ -45,7 +46,8 @@ def db_insert(from_user, to_user, reaction, counter):
         print "Can't find the database.\n"
         sys.exit(2)
 
-# parse events for reactions
+
+# parse slack events for reactions / commands
 def parse_event(event):
     #print str(event) + '\n'
     if event and len(event) > 0:
@@ -61,7 +63,7 @@ def parse_event(event):
                 counter = '1'
                 db_insert(from_user, to_user, reaction, counter)
             elif data['type'] == 'reaction_removed':
-                print "%s withdrew his reaction of '%s' from %s" % (from_user, reaction, to_user)
+                print "%s withdrew their reaction of '%s' from %s" % (from_user, reaction, to_user)
                 counter = '-1'
                 db_insert(from_user, to_user, reaction, counter)
             return reaction, from_user, to_user
@@ -83,10 +85,13 @@ def parse_event(event):
 
     return None, None, None
 
+
+# send a message with the correct way to use the bot
 def bot_usage():
     sc.api_call("chat.postMessage", channel=channel, text='usage: showme top <reaction>', as_user=True)
 
-# print top X
+
+# print top recipients of a reaction
 def print_top(reaction):
     if os.path.isfile('reactions.db'):
         con = db.connect('reactions.db')
@@ -96,7 +101,8 @@ def print_top(reaction):
             con.commit()
             rows = cur.fetchall()
             print "%-14s %+14s" % ('User', 'Count')
-            response = "```{:14} {:>14}\n".format('user', 'count')
+            #response = "```{:14} {:>14}\n".format('user', 'count')
+            response = "```"
             for row in rows:
                 print "%-14s %+14d" % (users[row[0]], row[1])
                 response += "{:14} {:14d}\n".format(users[row[0]],row[1])
@@ -107,13 +113,13 @@ def print_top(reaction):
         sys.exit(2)
 
 
-# get the list of users and their real names
+# get the list of users and their names for later use
 def get_users():
     data = sc.api_call('users.list', channel='#general')
     for user in data['members']:
         print 'id: %s, name: %s' % (user['id'], user['name'])
         users[user['id']] = user['name']
-    #print users
+
 
 # main
 if __name__ == '__main__':
