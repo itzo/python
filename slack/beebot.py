@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import time
 from slackclient import SlackClient
 import sqlite3 as db
 import sys
@@ -59,11 +60,11 @@ def parse_event(event):
             from_user = data['user']
             to_user = data['item_user']
             if data['type'] == 'reaction_added':
-                print "%s reacted with '%s' to %s" % (from_user, reaction, to_user)
+                print "%s reacted with '%s' to %s" % (users[from_user], reaction, users[to_user])
                 counter = '1'
                 db_insert(from_user, to_user, reaction, counter)
             elif data['type'] == 'reaction_removed':
-                print "%s withdrew their reaction of '%s' from %s" % (from_user, reaction, to_user)
+                print "%s withdrew their reaction of '%s' from %s" % (users[from_user], reaction, users[to_user])
                 counter = '-1'
                 db_insert(from_user, to_user, reaction, counter)
             return reaction, from_user, to_user
