@@ -6,6 +6,7 @@ import sys
 import re
 
 channel = '#general'
+users = {}
 
 # BOT_ID = os.environ.get('BOT_ID')
 
@@ -46,7 +47,7 @@ def db_insert(from_user, to_user, reaction, counter):
 
 # parse events for reactions
 def parse_event(event):
-    print str(event) + '\n'
+    #print str(event) + '\n'
     if event and len(event) > 0:
 
         # process reactions
@@ -97,8 +98,8 @@ def print_top(reaction):
             print "%-14s %+14s" % ('User', 'Count')
             response = "```{:14} {:>14}\n".format('user', 'count')
             for row in rows:
-                print "%-14s %+14d" % (row[0], row[1])
-                response += "{:14} {:14d}\n".format(row[0],row[1])
+                print "%-14s %+14d" % (users[row[0]], row[1])
+                response += "{:14} {:14d}\n".format(users[row[0]],row[1])
             response += "```"
             sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
     else:
@@ -111,6 +112,8 @@ def get_users():
     data = sc.api_call('users.list', channel='#general')
     for user in data['members']:
         print 'id: %s, name: %s' % (user['id'], user['name'])
+        users[user['id']] = user['name']
+    #print users
 
 # main
 if __name__ == '__main__':
