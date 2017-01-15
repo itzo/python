@@ -3,6 +3,7 @@ import time
 from slackclient import SlackClient
 import sqlite3 as db
 import sys
+import re
 
 channel = '#general'
 
@@ -19,7 +20,7 @@ def create_db():
                 from_user TEXT,
                 to_user TEXT,
                 reaction TEXT,
-                counter TEXT
+                counter INTEGER
             );""")
         con.commit()
     except db.Error, e:
@@ -45,7 +46,7 @@ def db_insert(from_user, to_user, reaction, counter):
 
 # parse events for reactions
 def parse_event(event):
-    #print str(event) + '\n'
+    print str(event) + '\n'
     if event and len(event) > 0:
 
         # process reactions
@@ -56,21 +57,54 @@ def parse_event(event):
             to_user = data['item_user']
             if data['type'] == 'reaction_added':
                 print "%s reacted with '%s' to %s" % (from_user, reaction, to_user)
-                counter = '+'
+                counter = '1'
                 db_insert(from_user, to_user, reaction, counter)
             elif data['type'] == 'reaction_removed':
                 print "%s withdrew his reaction of '%s' from %s" % (from_user, reaction, to_user)
-                counter = '-'
+                counter = '-1'
                 db_insert(from_user, to_user, reaction, counter)
             return reaction, from_user, to_user
 
         # answer commands
         if 'text' in data:
-            if data['text'] == 'top_roty':
-                response = 'Still calculating the stats... Need more time'
-                sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+            if data['text'].startswith('showme top'):
+                if len(data['text'].split()) > 2:
+                    reaction = data['text'].split()[2]
+                    if re.match(r'^[A-Za-z0-9_]+$', reaction):
+                        print_top(reaction)
+                        #if len(response) < 1:
+                        #    response = 'Not sure we have these stats yet...'
+                        #sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+                    else:
+                        bot_usage()
+                else:
+                    bot_usage()
 
     return None, None, None
+
+def bot_usage():
+    sc.api_call("chat.postMessage", channel=channel, text='usage: showme top <reaction>', as_user=True)
+
+# print top X
+def print_top(reaction):
+    if os.path.isfile('reactions.db'):
+        con = db.connect('reactions.db')
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT to_user, sum(counter) as count from reactions where reaction='"+ reaction +"' group by to_user order by count desc limit 5;")
+            con.commit()
+            rows = cur.fetchall()
+            print "%-14s %+14s" % ('User', 'Count')
+            response = "```{:14} {:>14}\n".format('user', 'count')
+            for row in rows:
+                print "%-14s %+14d" % (row[0], row[1])
+                response += "{:14} {:14d}\n".format(row[0],row[1])
+            response += "```"
+            sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+    else:
+        print "Can't find the database.\n"
+        sys.exit(2)
+
 
 # get the list of users and their real names
 def get_users():
