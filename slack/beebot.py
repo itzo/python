@@ -92,28 +92,29 @@ def parse_event(event):
         # answer commands
         if 'text' in data:
             if data['text'].lower().startswith('showme top'):
+                channel_id = data['channel']
                 if len(data['text'].split()) > 2:
                     reaction = data['text'].lower().split()[2]
                     if re.match(r'^[A-Za-z0-9_+]+$', reaction):
-                        print_top(reaction)
+                        print_top(reaction, channel_id)
                         #if len(response) < 1:
                         #    response = 'Not sure we have these stats yet...'
                         #sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
                     else:
-                        bot_usage()
+                        bot_usage(channel_id)
                 else:
-                    bot_usage()
+                    bot_usage(channel_id)
 
     return None, None, None
 
 
 # send a message with the correct way to use the bot
-def bot_usage():
-    sc.api_call("chat.postMessage", channel=channel, text='usage: showme top <reaction>', as_user=True)
+def bot_usage(channel_id):
+    sc.api_call("chat.postMessage", channel=channel_id, text='usage: showme top <reaction>', as_user=True)
 
 
 # print top recipients of a reaction
-def print_top(reaction):
+def print_top(reaction, channel_id):
     if os.path.isfile('reactions.db'):
         con = db.connect('reactions.db')
         with con:
@@ -123,11 +124,15 @@ def print_top(reaction):
             rows = cur.fetchall()
             print "Showing top "+reaction
             response = "```"
-            for row in rows:
-                print "%-14s %+14d" % (users[row[0]], row[1])
-                response += "{:14} {:14d}\n".format(users[row[0]],row[1])
+            if len(rows) > 0:
+                for row in rows:
+                    print "%-14s %+14d" % (users[row[0]], row[1])
+                    response += "{:14} {:14d}\n".format(users[row[0]],row[1])
+            else:
+                response += "no '"+reaction+"' reactions found"
+                print "none found"
             response += "```"
-            sc.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+            sc.api_call("chat.postMessage", channel=channel_id, text=response, as_user=True)
     else:
         print "Can't find the database.\n"
         sys.exit(2)
