@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-# project moved to: https://github.com/itzo/slack-beebot
+#
+# Project moved to: https://github.com/itzo/slack-beebot
+# This is just kept for historical reasons
+#
 
 import websocket
 import os
