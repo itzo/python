@@ -10,6 +10,25 @@ import re
 channel = '#general'
 users = {}
 
+# add timestamp to all print statements
+old_out = sys.stdout
+class timestamped:
+    nl = True
+
+    def write(self, x):
+        # overload write()
+        if x == '\n':
+            old_out.write(x)
+            self.nl = True
+        elif self.nl:
+            old_out.write('[ %s ] %s' % (str(int(time.time())), x))
+            self.nl = False
+        else:
+            old_out.write(x)
+sys.stdout = timestamped()
+
+
+
 
 # crate db table if none exists
 def create_db():
@@ -101,8 +120,7 @@ def print_top(reaction):
             cur.execute("SELECT to_user, sum(counter) as count from reactions where reaction='"+ reaction +"' group by to_user order by count desc limit 5;")
             con.commit()
             rows = cur.fetchall()
-            print "%-14s %+14s" % ('User', 'Count')
-            #response = "```{:14} {:>14}\n".format('user', 'count')
+            print "Showing top "+reaction
             response = "```"
             for row in rows:
                 print "%-14s %+14d" % (users[row[0]], row[1])
