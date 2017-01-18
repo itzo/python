@@ -71,10 +71,10 @@ def parse_event(event):
 
         # answer commands
         if 'text' in data:
-            if data['text'].startswith('showme top'):
+            if data['text'].lower().startswith('showme top'):
                 if len(data['text'].split()) > 2:
-                    reaction = data['text'].split()[2]
-                    if re.match(r'^[A-Za-z0-9_]+$', reaction):
+                    reaction = data['text'].lower().split()[2]
+                    if re.match(r'^[A-Za-z0-9_+]+$', reaction):
                         print_top(reaction)
                         #if len(response) < 1:
                         #    response = 'Not sure we have these stats yet...'
