@@ -59,11 +59,11 @@ def parse_event(event):
             reaction = data['reaction']
             from_user = data['user']
             to_user = data['item_user']
-            if data['type'] == 'reaction_added':
+            if data['type'] == 'reaction_added' and from_user != to_user:
                 print "%s reacted with '%s' to %s" % (users[from_user], reaction, users[to_user])
                 counter = '1'
                 db_insert(from_user, to_user, reaction, counter)
-            elif data['type'] == 'reaction_removed':
+            elif data['type'] == 'reaction_removed' and from_user != to_user:
                 print "%s withdrew their reaction of '%s' from %s" % (users[from_user], reaction, users[to_user])
                 counter = '-1'
                 db_insert(from_user, to_user, reaction, counter)
