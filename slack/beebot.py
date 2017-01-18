@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import websocket
 import os
 import time
 from slackclient import SlackClient
@@ -148,12 +149,16 @@ if __name__ == '__main__':
     # connect to slack
     token = os.environ.get('SLACK_BOT_TOKEN')
     sc = SlackClient(token)
-    if sc.rtm_connect():
-        print('Bot connected and running!')
-        #sc.api_call("chat.postMessage", channel=channel, text="beebot is back from the dead...", as_user=True)
-        get_users()
-        while True:
-            reaction, from_user, to_user = parse_event(sc.rtm_read())
-            time.sleep(1)
-    else:
-        print 'Connection failed. Check token.'
+    try:
+        if sc.rtm_connect():
+            print('Bot connected and running!')
+            #sc.api_call("chat.postMessage", channel=channel, text="beebot is back from the dead...", as_user=True)
+            get_users()
+            while True:
+                reaction, from_user, to_user = parse_event(sc.rtm_read())
+                time.sleep(1)
+        else:
+            print 'Connection failed. Check token.'
+    except websocket._exceptions.WebSocketConnectionClosedException:
+        print 'Connection closed. Did someone disable the bot integration?'
+
