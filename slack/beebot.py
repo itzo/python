@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# project moved to: https://github.com/itzo/slack-beebot
+
 import websocket
 import os
 import time
